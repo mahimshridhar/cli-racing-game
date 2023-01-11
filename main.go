@@ -1,7 +1,19 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+	"os"
+	"time"
+
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 func main() {
-	fmt.Println("init")
+	rand.Seed(time.Now().UnixNano())
+	p := tea.NewProgram(initModel())
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("Something went wrong: %v", err)
+		os.Exit(1)
+	}
 }
