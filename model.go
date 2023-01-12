@@ -9,12 +9,17 @@ import (
 
 type RaceTrack [][]string
 
+type car struct {
+	position int
+}
+
 type model struct {
 	racetrack [][]string
 	gameOver  bool
 	score     int
 	width     int
 	height    int
+	traffic   []car
 }
 
 func initModel() model {
@@ -30,7 +35,7 @@ func initModel() model {
 type TickMsg time.Time
 
 func (m model) tick() tea.Cmd {
-	return tea.Tick(time.Second/2, func(t time.Time) tea.Msg {
+	return tea.Tick(time.Second/10, func(t time.Time) tea.Msg {
 		return TickMsg(t)
 	})
 }
@@ -49,8 +54,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case TickMsg:
 		r := NewTraffic()
-		m.racetrack = append([][]string{r}, m.racetrack...)
-		m.racetrack = m.racetrack[1:]
+
+		if m.height == len(m.traffic) {
+			m.traffic = m.traffic[:len(m.traffic)-1]
+		}
+		m.traffic = append([]car{r}, m.traffic...)
+
 		return m, m.tick()
 
 	}
@@ -64,7 +73,11 @@ func (m model) View() string {
 		m.racetrack = append(m.racetrack, strings.Split("|"+strings.Repeat(" |", 6), ""))
 	}
 
-	m.racetrack[0] = NewTraffic()
+	// m.racetrack[0] = NewTraffic()
+
+	for i, val := range m.traffic {
+		m.racetrack[i][val.position] = "#"
+	}
 
 	for _, row := range m.racetrack {
 		s.WriteString(strings.Join(row, ""))
