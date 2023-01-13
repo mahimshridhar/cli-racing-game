@@ -11,6 +11,12 @@ type RaceTrack [][]string
 
 type car struct {
 	position int
+	shape    string
+}
+
+type MyCar struct {
+	x int
+	y int
 }
 
 type model struct {
@@ -20,6 +26,7 @@ type model struct {
 	width     int
 	height    int
 	traffic   []car
+	myCar     MyCar
 }
 
 func initModel() model {
@@ -29,6 +36,7 @@ func initModel() model {
 		score:     0,
 		width:     13,
 		height:    20,
+		myCar:     MyCar{x: 19, y: 1},
 	}
 }
 
@@ -51,6 +59,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		//quit game
 		case "ctrl+c", "q":
 			return m, tea.Quit
+		case "up":
+			if m.myCar.x-1 > 1 {
+				m.myCar.x = m.myCar.x - 1
+			}
+		case "down":
+			if m.myCar.x+1 < m.height {
+				m.myCar.x = m.myCar.x + 1
+			}
+			return m, nil
+		case "right":
+			if m.myCar.y > 0 {
+				m.myCar.y = m.myCar.y + 2
+			}
+		case "left":
+			if m.myCar.y > 0 {
+				m.myCar.y = m.myCar.y - 2
+			}
 		}
 	case TickMsg:
 		r := NewTraffic()
@@ -73,11 +98,11 @@ func (m model) View() string {
 		m.racetrack = append(m.racetrack, strings.Split("|"+strings.Repeat(" |", 6), ""))
 	}
 
-	// m.racetrack[0] = NewTraffic()
-
 	for i, val := range m.traffic {
-		m.racetrack[i][val.position] = "#"
+		m.racetrack[i][val.position] = val.shape
 	}
+
+	m.racetrack[m.myCar.x][m.myCar.y] = "X"
 
 	for _, row := range m.racetrack {
 		s.WriteString(strings.Join(row, ""))
