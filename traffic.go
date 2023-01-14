@@ -5,17 +5,17 @@ import (
 )
 
 func NewTraffic() car {
-	carIndex := rand.Intn(13)
+	carIndex := rand.Intn(WIDTH)
 
-	if carIndex == 5 || carIndex == 3 || carIndex == 10 {
+	if carIndex%2 == 0 {
 		return car{
 			position: carIndex,
-			shape:    " ",
+			shape:    NOCAR,
 		}
 	}
 
 	return car{
 		position: carIndex,
-		shape:    "#",
+		shape:    CAR,
 	}
 }

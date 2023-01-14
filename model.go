@@ -7,6 +7,12 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+const CAR = "#"
+const NOCAR = " "
+const WIDTH = 13
+const HEIGHT = 20
+const WALL = "|"
+
 type RaceTrack [][]string
 
 type car struct {
@@ -23,8 +29,6 @@ type model struct {
 	racetrack [][]string
 	gameOver  bool
 	score     int
-	width     int
-	height    int
 	traffic   []car
 	myCar     MyCar
 }
@@ -34,8 +38,6 @@ func initModel() model {
 		racetrack: [][]string{},
 		gameOver:  false,
 		score:     0,
-		width:     13,
-		height:    20,
 		myCar:     MyCar{x: 19, y: 1},
 	}
 }
@@ -56,7 +58,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		//quit game
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "up":
@@ -64,27 +65,34 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.myCar.x = m.myCar.x - 1
 			}
 		case "down":
-			if m.myCar.x+1 < m.height {
+			if m.myCar.x+1 < HEIGHT {
 				m.myCar.x = m.myCar.x + 1
 			}
 			return m, nil
 		case "right":
-			if m.myCar.y > 0 {
+			if m.myCar.y+2 <= WIDTH-1 {
 				m.myCar.y = m.myCar.y + 2
 			}
 		case "left":
-			if m.myCar.y > 0 {
+			if m.myCar.y-2 >= 1 {
 				m.myCar.y = m.myCar.y - 2
 			}
 		}
 	case TickMsg:
 		r := NewTraffic()
 
-		if m.height == len(m.traffic) {
+		if HEIGHT == len(m.traffic) {
 			m.traffic = m.traffic[:len(m.traffic)-1]
 		}
 		m.traffic = append([]car{r}, m.traffic...)
 
+		for i, randomCar := range m.traffic {
+			if randomCar.position == m.myCar.y && i == m.myCar.x && randomCar.shape == CAR {
+				m.gameOver = true
+				return m, tea.Quit
+			}
+		}
+		m.score += 1
 		return m, m.tick()
 
 	}
@@ -94,19 +102,39 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	var s strings.Builder
 
-	for i := 0; i < m.height; i++ {
-		m.racetrack = append(m.racetrack, strings.Split("|"+strings.Repeat(" |", 6), ""))
-	}
+	s.WriteString(RenderTitle())
 
+	s.WriteRune('\n')
+
+	RenderRaceTrack(&m)
 	for i, val := range m.traffic {
-		m.racetrack[i][val.position] = val.shape
+		if val.shape == CAR {
+			m.racetrack[i][val.position] = val.shape
+		}
 	}
+	if m.gameOver {
+		m.racetrack[m.myCar.x][m.myCar.y] = RenderCarCrashed()
 
-	m.racetrack[m.myCar.x][m.myCar.y] = "X"
+	} else {
+		m.racetrack[m.myCar.x][m.myCar.y] = RenderMyCar()
+	}
 
 	for _, row := range m.racetrack {
 		s.WriteString(strings.Join(row, ""))
 		s.WriteRune('\n')
+	}
+	s.WriteRune('\n')
+	s.WriteString(RenderScore(m.score))
+	s.WriteRune('\n')
+	s.WriteString(RenderHelp())
+	s.WriteRune('\n')
+	s.WriteString(RenderQuitcommand())
+	s.WriteRune('\n')
+	s.WriteRune('\n')
+
+	if m.gameOver {
+		s.WriteString(RenderGameOver())
+
 	}
 	return s.String()
 }
