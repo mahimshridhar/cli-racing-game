@@ -3,4 +3,4 @@ A simple CLI based racing game, inspired by [Car Racing Game
 
 Built with [Bubble Tea](https://github.com/charmbracelet/bubbletea#bubble-tea)
 
-[![Go Report Card](https://goreportcard.com/badge/https://github.com/mahimshridhar/cli-racing-game)](https://github.com/mahimshridhar/cli-racing-game)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mahimshridhar/cli-racing-game)](https://github.com/mahimshridhar/cli-racing-game)
